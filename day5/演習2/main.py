@@ -21,7 +21,8 @@ class DataLoader:
         if path is None:
             # スクリプトの場所からの絶対パスを作る
             base_dir = os.path.dirname(os.path.abspath(__file__))
-            path = os.path.join(base_dir, "data", "titanic.csv")
+            # ↓ここを修正
+            path = os.path.join(base_dir, "data", "Titanic.csv")  # ←大文字に変更
         return pd.read_csv(path)
 
     @staticmethod
