@@ -11,19 +11,18 @@ import pickle
 import time
 import great_expectations as gx
 
+
 class DataLoader:
     """データロードを行うクラス"""
 
     @staticmethod
     def load_titanic_data(path=None):
         """Titanicデータセットを読み込む"""
-        if path:
-            return pd.read_csv(path)
-        else:
-            # ローカルのファイル
-            local_path = "data/Titanic.csv"
-            if os.path.exists(local_path):
-                return pd.read_csv(local_path)
+        if path is None:
+            # スクリプトの場所からの絶対パスを作る
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            path = os.path.join(base_dir, "data", "titanic.csv")
+        return pd.read_csv(path)
 
     @staticmethod
     def preprocess_titanic_data(data):
@@ -243,6 +242,21 @@ def test_model_performance():
     ), f"モデル性能がベースラインを下回っています: {metrics['accuracy']}"
 
     # 推論時間の確認
+    assert (
+        metrics["inference_time"] < 1.0
+    ), f"推論時間が長すぎます: {metrics['inference_time']}秒"
+
+
+def test_inference_speed_and_accuracy():
+    """推論時間と精度をチェックする関数"""
+    data = DataLoader.load_titanic_data()
+    X, y = DataLoader.preprocess_titanic_data(data)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    model = ModelTester.train_model(X_train, y_train)
+    metrics = ModelTester.evaluate_model(model, X_test, y_test)
+    assert metrics["accuracy"] >= 0.75, f"精度が基準未満: {metrics['accuracy']}"
     assert (
         metrics["inference_time"] < 1.0
     ), f"推論時間が長すぎます: {metrics['inference_time']}秒"
